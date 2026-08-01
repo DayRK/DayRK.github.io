@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowUpRight, Eye, Plus, Save, Trash2, Edit2, MonitorPlay } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleExclamation, faCircleCheck, faEye, faPlus, faFloppyDisk, faTrash, faPenToSquare, faPlay } from '@fortawesome/free-solid-svg-icons';
 
 type Project = {
   id?: number;
@@ -9,6 +10,7 @@ type Project = {
   summary: string;
   stack: string[];
   link: string;
+  showPreview: boolean;
 };
 
 type AdminDashboardProps = {
@@ -25,14 +27,59 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
     summary: '',
     stack: [],
     link: '',
+    showPreview: true,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [statusMessage, setStatusMessage] = useState<{ text: string; tone: 'success' | 'error' } | null>(null);
   const [previewProject, setPreviewProject] = useState<Project | null>(null);
 
   useEffect(() => {
-    fetchProjects();
-    fetchAvailability();
+    if (!statusMessage) return;
+
+    const timer = window.setTimeout(() => {
+      setStatusMessage(null);
+    }, 3200);
+
+    return () => window.clearTimeout(timer);
+  }, [statusMessage]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadDashboard = async () => {
+      try {
+        const [projectsData, availabilityData] = await Promise.all([
+          fetch('/api/projects').then(async (response) => {
+            if (!response.ok) throw new Error('Failed to fetch projects');
+            return response.json();
+          }),
+          fetch('/api/availability').then(async (response) => {
+            if (!response.ok) throw new Error('Failed to fetch availability');
+            return response.json();
+          }),
+        ]);
+
+        if (!isActive) return;
+
+        setProjects(projectsData ?? []);
+        setAvailability(availabilityData?.status ?? 'Open to Commissions');
+      } catch {
+        if (isActive) {
+          setError('Failed to load dashboard data');
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadDashboard();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   const getHeaders = () => ({
@@ -46,7 +93,7 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
       if (!res.ok) throw new Error('Failed to fetch projects');
       const data = await res.json();
       setProjects(data);
-    } catch (err) {
+    } catch {
       setError('Failed to load projects');
     } finally {
       setLoading(false);
@@ -59,7 +106,7 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
       if (!res.ok) throw new Error('Failed to fetch availability');
       const data = await res.json();
       setAvailability(data.status);
-    } catch (err) {
+    } catch {
       console.error('Failed to load availability');
     }
   };
@@ -67,6 +114,7 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
   const addProject = async () => {
     if (!newProject.title || !newProject.summary || !newProject.link) {
       setError('Please fill in all fields');
+      setStatusMessage({ text: 'Please complete the required fields before saving.', tone: 'error' });
       return;
     }
 
@@ -83,11 +131,13 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
         return;
       }
 
-      setNewProject({ title: '', summary: '', stack: [], link: '' });
+      setNewProject({ title: '', summary: '', stack: [], link: '', showPreview: true });
       fetchProjects();
       setError('');
-    } catch (err) {
+      setStatusMessage({ text: 'Project added successfully.', tone: 'success' });
+    } catch {
       setError('Failed to add project');
+      setStatusMessage({ text: 'Unable to add the project right now.', tone: 'error' });
     }
   };
 
@@ -111,8 +161,10 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
       setEditingData(null);
       fetchProjects();
       setError('');
-    } catch (err) {
+      setStatusMessage({ text: 'Project updated successfully.', tone: 'success' });
+    } catch {
       setError('Failed to update project');
+      setStatusMessage({ text: 'Unable to update the project right now.', tone: 'error' });
     }
   };
 
@@ -133,8 +185,10 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
 
       fetchProjects();
       setError('');
-    } catch (err) {
+      setStatusMessage({ text: 'Project removed successfully.', tone: 'success' });
+    } catch {
       setError('Failed to delete project');
+      setStatusMessage({ text: 'Unable to delete the project right now.', tone: 'error' });
     }
   };
 
@@ -153,8 +207,10 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
       }
 
       setError('');
-    } catch (err) {
+      setStatusMessage({ text: 'Availability updated successfully.', tone: 'success' });
+    } catch {
       setError('Failed to update availability');
+      setStatusMessage({ text: 'Unable to update availability right now.', tone: 'error' });
     }
   };
 
@@ -185,8 +241,16 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
         </div>
 
         {error && (
-          <div className="rounded-[1.25rem] border border-red-500/40 bg-red-500/10 p-4 text-red-200">
-            {error}
+          <div className="flex items-start gap-3 rounded-[1.25rem] border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200 shadow-[0_10px_30px_rgba(239,68,68,0.12)] animate-[fadeIn_0.25s_ease-out]">
+            <FontAwesomeIcon icon={faCircleExclamation} className="mt-0.5 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {statusMessage && (
+          <div className={`flex items-start gap-3 rounded-[1.25rem] border px-4 py-3 shadow-[0_10px_30px_rgba(4,2,16,0.18)] animate-[fadeIn_0.25s_ease-out] ${statusMessage.tone === 'success' ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200' : 'border-red-500/40 bg-red-500/10 text-red-200'}`}>
+            {statusMessage.tone === 'success' ? <FontAwesomeIcon icon={faCircleCheck} className="mt-0.5 shrink-0" /> : <FontAwesomeIcon icon={faCircleExclamation} className="mt-0.5 shrink-0" />}
+            <span>{statusMessage.text}</span>
           </div>
         )}
 
@@ -214,7 +278,7 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
                   onClick={updateAvailability}
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-fuchsia-600 px-5 py-3 font-medium text-white transition hover:bg-fuchsia-700"
                 >
-                  <Save size={18} /> Save
+                  <FontAwesomeIcon icon={faFloppyDisk} /> Save
                 </button>
               </div>
             </div>
@@ -232,33 +296,42 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
                   placeholder="Project title"
                   value={newProject.title}
                   onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none focus:border-fuchsia-400"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none transition focus:border-fuchsia-400 focus:bg-slate-800"
                 />
                 <textarea
                   placeholder="Project summary"
                   value={newProject.summary}
                   onChange={(e) => setNewProject({ ...newProject, summary: e.target.value })}
-                  className="h-24 w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none focus:border-fuchsia-400"
+                  className="h-24 w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none transition focus:border-fuchsia-400 focus:bg-slate-800"
                 />
                 <input
                   type="text"
                   placeholder="Project link"
                   value={newProject.link}
                   onChange={(e) => setNewProject({ ...newProject, link: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none focus:border-fuchsia-400"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none transition focus:border-fuchsia-400 focus:bg-slate-800"
                 />
                 <input
                   type="text"
                   placeholder="Stack (comma separated)"
                   value={newProject.stack.join(', ')}
                   onChange={(e) => setNewProject({ ...newProject, stack: e.target.value.split(',').map((s) => s.trim()) })}
-                  className="w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none focus:border-fuchsia-400"
+                  className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none transition focus:border-fuchsia-400 focus:bg-slate-800"
                 />
+                <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-800/70 px-4 py-3 text-sm text-slate-300 transition hover:border-fuchsia-400/30">
+                  <input
+                    type="checkbox"
+                    checked={newProject.showPreview}
+                    onChange={(e) => setNewProject({ ...newProject, showPreview: e.target.checked })}
+                    className="h-4 w-4 rounded border-white/20 bg-slate-900 text-fuchsia-500 focus:ring-fuchsia-400"
+                  />
+                  <span>Show the Live Preview button on the public portfolio</span>
+                </label>
                 <button
                   onClick={addProject}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-fuchsia-600 px-5 py-3 font-medium text-white transition hover:bg-fuchsia-700"
                 >
-                  <Plus size={18} /> Add project
+                  <FontAwesomeIcon icon={faPlus} /> Add project
                 </button>
               </div>
             </div>
@@ -272,7 +345,7 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
                   <p className="mt-1 text-sm text-slate-400">See how the portfolio will look in real time.</p>
                 </div>
                 <div className="rounded-full border border-white/10 bg-white/10 p-2 text-fuchsia-300">
-                  <MonitorPlay size={16} />
+                  <FontAwesomeIcon icon={faPlay} size="sm" />
                 </div>
               </div>
 
@@ -300,7 +373,7 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
                     ))}
                   </div>
                   <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm text-slate-200">
-                    <Eye size={14} />
+                    <FontAwesomeIcon icon={faEye} />
                     <span>{previewProject?.link || newProject.link || 'https://your-link.com'}</span>
                   </div>
                 </div>
@@ -321,29 +394,38 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
                   </div>
                 ) : (
                   projects.map((project) => (
-                    <div key={project.id} className="rounded-[1rem] border border-white/10 bg-slate-800/50 p-4">
+                    <div key={project.id} className="rounded-[1rem] border border-white/10 bg-slate-800/50 p-4 transition hover:border-fuchsia-400/25 hover:bg-slate-800/70">
                       {editingId === project.id && editingData ? (
                         <div className="space-y-3">
                           <input
                             type="text"
                             value={editingData.title}
                             onChange={(e) => setEditingData({ ...editingData, title: e.target.value })}
-                            className="w-full rounded-lg border border-white/10 bg-slate-700 px-3 py-2 text-slate-100 outline-none focus:border-fuchsia-400"
+                            className="w-full rounded-lg border border-white/10 bg-slate-700/80 px-3 py-2 text-slate-100 outline-none transition focus:border-fuchsia-400"
                           />
                           <textarea
                             value={editingData.summary}
                             onChange={(e) => setEditingData({ ...editingData, summary: e.target.value })}
-                            className="h-20 w-full rounded-lg border border-white/10 bg-slate-700 px-3 py-2 text-slate-100 outline-none focus:border-fuchsia-400"
+                            className="h-20 w-full rounded-lg border border-white/10 bg-slate-700/80 px-3 py-2 text-slate-100 outline-none transition focus:border-fuchsia-400"
                           />
                           <input
                             type="text"
                             value={editingData.link}
                             onChange={(e) => setEditingData({ ...editingData, link: e.target.value })}
-                            className="w-full rounded-lg border border-white/10 bg-slate-700 px-3 py-2 text-slate-100 outline-none focus:border-fuchsia-400"
+                            className="w-full rounded-lg border border-white/10 bg-slate-700/80 px-3 py-2 text-slate-100 outline-none transition focus:border-fuchsia-400"
                           />
+                          <label className="flex items-center gap-3 rounded-lg border border-white/10 bg-slate-700/80 px-3 py-2 text-sm text-slate-300 transition hover:border-fuchsia-400/30">
+                            <input
+                              type="checkbox"
+                              checked={editingData.showPreview}
+                              onChange={(e) => setEditingData({ ...editingData, showPreview: e.target.checked })}
+                              className="h-4 w-4 rounded border-white/20 bg-slate-900 text-fuchsia-500 focus:ring-fuchsia-400"
+                            />
+                            <span>Show the Live Preview button</span>
+                          </label>
                           <div className="flex flex-col gap-2 sm:flex-row">
-                            <button onClick={updateProject} className="flex-1 rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition hover:bg-green-700">
-                              <Save size={16} /> Save
+                            <button onClick={updateProject} className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white transition hover:bg-emerald-700">
+                              <FontAwesomeIcon icon={faFloppyDisk} /> Save
                             </button>
                             <button onClick={() => { setEditingId(null); setEditingData(null); }} className="flex-1 rounded-lg bg-slate-600 px-4 py-2 font-medium text-white transition hover:bg-slate-700">
                               Cancel
@@ -364,7 +446,7 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
                               className="rounded-full border border-white/10 bg-white/10 p-2 text-slate-200 transition hover:bg-white/20"
                               aria-label="Preview project"
                             >
-                              <Eye size={16} />
+                              <FontAwesomeIcon icon={faEye} />
                             </button>
                           </div>
                           <div className="mt-4 flex flex-wrap gap-2">
@@ -375,12 +457,17 @@ export default function AdminDashboard({ token }: AdminDashboardProps) {
                             ))}
                           </div>
                           <p className="mt-4 text-sm text-slate-400">{project.link}</p>
+                          <div className="mt-3 flex items-center gap-2 text-sm text-slate-400">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs ${project.showPreview ? 'bg-emerald-500/10 text-emerald-300' : 'bg-slate-700 text-slate-300'}`}>
+                              {project.showPreview ? 'Preview enabled' : 'Preview hidden'}
+                            </span>
+                          </div>
                           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                             <button onClick={() => { setEditingId(project.id || null); setEditingData(project); }} className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700">
-                              <Edit2 size={16} /> Edit
+                              <FontAwesomeIcon icon={faPenToSquare} /> Edit
                             </button>
                             <button onClick={() => deleteProject(project.id || 0)} className="flex-1 rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition hover:bg-red-700">
-                              <Trash2 size={16} /> Delete
+                              <FontAwesomeIcon icon={faTrash} /> Delete
                             </button>
                           </div>
                         </div>

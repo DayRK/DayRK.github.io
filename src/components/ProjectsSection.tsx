@@ -5,6 +5,7 @@ type Project = {
   summary: string;
   stack: string[];
   link: string;
+  showPreview?: boolean;
 };
 
 type ProjectsSectionProps = {
@@ -27,15 +28,17 @@ export default function ProjectsSection({ projects }: ProjectsSectionProps) {
                 <span key={item} className="rounded-full border border-white/10 bg-slate-800/80 px-3 py-1 text-xs text-slate-300">{item}</span>
               ))}
             </div>
-            <a
-              href={project.link}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-5 inline-flex items-center gap-2 self-start rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-3 py-2 text-sm font-medium text-fuchsia-200 transition hover:bg-fuchsia-400/20"
-            >
-              View Live
-              <ArrowUpRight size={16} />
-            </a>
+            {(project.showPreview ?? true) ? (
+              <a
+                href={project.link}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-flex items-center gap-2 self-start rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-3 py-2 text-sm font-medium text-fuchsia-200 transition hover:bg-fuchsia-400/20"
+              >
+                View Live
+                <ArrowUpRight size={16} />
+              </a>
+            ) : null}
           </article>
         ))}
       </div>

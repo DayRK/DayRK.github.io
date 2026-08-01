@@ -19,6 +19,7 @@ export const ProjectSchema = z.object({
     .array(z.string().max(100))
     .min(1, 'At least one technology is required')
     .max(20, 'Maximum 20 technologies allowed'),
+  showPreview: z.boolean().optional().default(true),
 });
 
 export const AvailabilitySchema = z.object({

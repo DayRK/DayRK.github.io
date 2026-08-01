@@ -7,6 +7,7 @@ type ProjectRecord = {
   stack?: unknown;
   link?: string;
   created_at?: string;
+  show_preview?: boolean | null;
 };
 
 type PortfolioProject = {
@@ -15,6 +16,7 @@ type PortfolioProject = {
   summary: string;
   stack: string[];
   link: string;
+  showPreview: boolean;
 };
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? '';
@@ -48,6 +50,7 @@ export function normalizeProject(raw: ProjectRecord): PortfolioProject {
     summary: String(raw.summary ?? ''),
     stack: normalizeStack(raw.stack),
     link: String(raw.link ?? '#'),
+    showPreview: typeof raw.show_preview === 'boolean' ? raw.show_preview : true,
   };
 }
 
@@ -58,7 +61,7 @@ export async function fetchProjects() {
 
   const { data, error } = await supabase
     .from('projects')
-    .select('id, title, summary, stack, link, created_at')
+    .select('*')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -68,7 +71,7 @@ export async function fetchProjects() {
   return (data ?? []).map((item) => normalizeProject(item as ProjectRecord));
 }
 
-export async function createProject(input: { title: string; summary: string; stack: string[]; link: string }) {
+export async function createProject(input: { title: string; summary: string; stack: string[]; link: string; showPreview: boolean }) {
   if (!supabase) {
     throw new Error('Supabase is not configured');
   }
@@ -78,6 +81,7 @@ export async function createProject(input: { title: string; summary: string; sta
     summary: input.summary,
     stack: input.stack,
     link: input.link,
+    show_preview: input.showPreview,
   });
 
   if (error) {
@@ -85,7 +89,7 @@ export async function createProject(input: { title: string; summary: string; sta
   }
 }
 
-export async function updateProject(id: number, input: { title: string; summary: string; stack: string[]; link: string }) {
+export async function updateProject(id: number, input: { title: string; summary: string; stack: string[]; link: string; showPreview: boolean }) {
   if (!supabase) {
     throw new Error('Supabase is not configured');
   }
@@ -95,6 +99,7 @@ export async function updateProject(id: number, input: { title: string; summary:
     summary: input.summary,
     stack: input.stack,
     link: input.link,
+    show_preview: input.showPreview,
   }).eq('id', id);
 
   if (error) {

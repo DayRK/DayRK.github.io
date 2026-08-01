@@ -1,15 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AdminDashboard from '@/components/AdminDashboard';
 
 export default function AdminPage() {
-  const [token, setToken] = useState<string | null>(
-    typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null
-  );
+  const [token, setToken] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    try {
+      const storedToken = window.localStorage.getItem('adminToken');
+      setToken(storedToken);
+    } catch {
+      setToken(null);
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

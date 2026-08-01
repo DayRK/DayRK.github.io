@@ -14,6 +14,7 @@ type PortfolioProject = {
   summary: string;
   stack: string[];
   link: string;
+  showPreview?: boolean;
 };
 
 export default async function Home() {
