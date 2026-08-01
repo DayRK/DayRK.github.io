@@ -1,95 +1,65 @@
-# Security Implementation Guide
+# Security Notes
 
-## Overview
-Your portfolio admin dashboard now has comprehensive security protections:
+This portfolio has a simple admin layer, so I kept the security setup practical rather than overcomplicated.
 
-### 🔐 Authentication & Authorization
-- **JWT Token-Based Authentication**: Admin access requires a password, which generates a 24-hour JWT token stored in browser's localStorage
-- **Password Validation**: Server-side password verification with bcryptjs hashing
-- **Token Verification**: All protected API endpoints verify the JWT token before processing requests
+## What is protected
+- The admin dashboard needs a password to log in
+- Protected API routes require a JWT token
+- Project and availability updates are validated before they go through
+- Basic rate limiting is in place for the auth and data routes
 
-### 🛡️ API Protection
-All admin-only endpoints (POST, PUT, DELETE) require:
-1. Valid JWT token in `Authorization: Bearer <token>` header
-2. Input validation using Zod schemas
-3. Rate limiting (30 requests per minute per IP)
-4. Error handling that doesn't leak sensitive information
+## What is checked
+- Project title, summary, link, and stack are validated
+- Availability status only accepts the expected values
+- Admin login requires a non-empty password
 
-### 📝 Input Validation (Zod)
-All inputs are validated before database operations:
+## Small but useful protections
+- JWT-based auth for admin actions
+- Rate limiting to slow down repeated requests
+- Validation to prevent malformed input
+- No sensitive values are exposed in the API responses
 
-**Projects:**
-- Title: 1-255 characters, required
-- Summary: 10-1000 characters, required
-- Link: Valid URL format, required
-- Stack: Array of 1-20 technologies (max 100 chars each)
+## Environment variables
+Keep these in `.env.local` and never commit them:
 
-**Availability:**
-- Status: Only accepts specific enum values (Open to Commissions, Limited Availability, Closed for Commissions)
-
-**Admin Login:**
-- Password: Required, non-empty
-
-### ⏱️ Rate Limiting
-- 30 requests per minute per IP address
-- Applies to all API endpoints (both public and private)
-- Returns HTTP 429 (Too Many Requests) when exceeded
-- Rate limit records auto-cleanup every hour
-
-### 🔒 Password Security
-1. **Environment Variable**: Store `ADMIN_PASSWORD` in `.env.local` (never commit to git)
-2. **Default**: `admin123` (CHANGE THIS IN PRODUCTION!)
-3. **Hashing Ready**: Code supports bcryptjs hashing for production
-
-### 🚀 Setup Instructions
-
-#### 1. Create `.env.local` (CRITICAL - Never commit this file!)
-```
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_db_password
-DB_NAME=portfolio
-
-ADMIN_PASSWORD=your-secure-password-here
-JWT_SECRET=your-super-secret-key-min-32-chars
+```env
+ADMIN_PASSWORD=your-admin-password
+JWT_SECRET=your-secret-key
 ```
 
-#### 2. Update `.gitignore`
-Ensure `.env.local` is already in your `.gitignore`:
-```
-.env.local
-.env*.local
-```
+If you use this for production, change the defaults and use a strong secret.
 
-#### 3. Generate Strong Secrets
-For production, use strong random keys:
-```bash
-# Generate random JWT secret
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+### 🚀 Setup
 
-# Or use OpenSSL
-openssl rand -hex 32
+1. Create `.env.local` in the project root
+2. Add your admin password and JWT secret there
+3. Keep the file out of source control
+
+Example:
+```env
+ADMIN_PASSWORD=your-admin-password
+JWT_SECRET=your-secret-key
 ```
 
-### 🔑 Using the Admin Dashboard
+### 🔑 Using the admin area
 
-1. **Access**: Navigate to `/admin`
-2. **Login**: Enter your `ADMIN_PASSWORD`
-3. **Token**: JWT token is stored in browser localStorage (24-hour expiration)
-4. **Logout**: Click logout to clear the token
+1. Go to `/admin`
+2. Enter the admin password
+3. The app will issue a short-lived token for the session
+4. Logout when you are done
 
-### 📊 What's Protected
+### 📊 Protected routes
 
-**Protected Endpoints (Require JWT):**
-- `POST /api/projects` - Create project
-- `PUT /api/projects/[id]` - Update project
-- `DELETE /api/projects/[id]` - Delete project
-- `PUT /api/availability` - Update availability status
+Protected routes require a valid token:
+- `POST /api/projects`
+- `PUT /api/projects/[id]`
+- `DELETE /api/projects/[id]`
+- `PUT /api/availability`
 
-**Public Endpoints (Rate Limited):**
-- `GET /api/projects` - List projects
-- `GET /api/availability` - Get availability status
-- `POST /api/auth/login` - Login (rate limited to prevent brute force)
+Public routes are still rate limited:
+- `GET /api/projects`
+- `GET /api/availability`
+- `POST /api/auth/login`
 
 ### 🔍 Security Features by Component
 

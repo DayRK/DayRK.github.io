@@ -5,7 +5,6 @@ import { checkRateLimit, getRateLimitKey } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting
     const key = getRateLimitKey(request);
     if (!checkRateLimit(key)) {
       return NextResponse.json(
@@ -16,7 +15,6 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    // Validate input
     const validationResult = AdminLoginSchema.safeParse(body);
     if (!validationResult.success) {
       return NextResponse.json(
@@ -27,10 +25,8 @@ export async function POST(request: NextRequest) {
 
     const { password } = validationResult.data;
 
-    // Verify password
     const isValid = await validateAdminPassword(password);
     if (!isValid) {
-      // Log failed attempt (in production, log to database or monitoring service)
       console.warn(`Failed admin login attempt from ${getRateLimitKey(request)}`);
       return NextResponse.json(
         { error: 'Invalid credentials' },
@@ -38,7 +34,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate token
     const token = getAdminToken(password);
     if (!token) {
       return NextResponse.json(

@@ -30,13 +30,11 @@ export function verifyToken(token: string): Record<string, any> | null {
 
 export async function validateAdminPassword(password: string): Promise<boolean> {
   if (!password) return false;
-  
-  // If ADMIN_PASSWORD looks like a hash, compare it; otherwise do plain comparison
+
   if (ADMIN_PASSWORD.startsWith('$2')) {
     return comparePassword(password, ADMIN_PASSWORD);
   }
-  
-  // Plain comparison (fallback, ideally use hashed password in env)
+
   return password === ADMIN_PASSWORD;
 }
 

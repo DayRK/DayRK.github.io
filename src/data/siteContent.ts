@@ -3,7 +3,7 @@ export const profile = {
   tagline: 'Information Technology Student at the National University - Manila',
   intro: 'Full Stack Web Application Developer',
   description: 'Software engineer crafting polished web experiences with modern architecture.',
-  email: 'janpatrickbejare@example.com',
+  email: 'janpatrickbejare05@gmail.com',
   availability: 'Based in Manila • Open to freelance and collaboration opportunities',
 };
 
@@ -14,7 +14,7 @@ export const quickFacts = [
 ];
 
 export const aboutContent = {
-  title: 'Technical Sandbox',
+  title: '',
   sections: [
     {
       heading: 'Languages',
@@ -57,7 +57,7 @@ export const projects = [
 ];
 
 export const socialLinks = [
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/', iconName: 'linkedin' as const },
-  { label: 'GitHub', href: 'https://github.com/', iconName: 'github' as const },
-  { label: 'Fiverr', href: 'https://www.fiverr.com/', iconName: 'fiverr' as const },
+  { label: 'LinkedIn', href: '#', iconName: 'linkedin' as const },
+  { label: 'GitHub', href: 'https://github.com/DayRK', iconName: 'github' as const },
+  { label: 'Fiverr', href: '#', iconName: 'fiverr' as const },
 ];
