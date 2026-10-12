@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { Search } from 'lucide-react';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import Footer from '@/components/Footer';
 import { socialLinks } from '@/data/siteContent';
-import { searchContent } from '@/lib/db';
+import { searchContent, fetchModuleVisibility } from '@/lib/db';
+import { resolveModuleAccess } from '@/lib/visibility';
+import { isModuleVisible } from '@/lib/modules';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,8 +21,14 @@ type SearchPageProps = {
 };
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
+  const access = await resolveModuleAccess('search');
+  if (!access.allowed) {
+    notFound();
+  }
+
   const { q } = await searchParams;
   const query = (q ?? '').trim().slice(0, 100);
+  const visibility = await fetchModuleVisibility();
 
   let results: Awaited<ReturnType<typeof searchContent>> = {
     projects: [],
@@ -38,7 +47,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     }
   }
 
-  const total =
+  // A hidden module must not leak its contents through search results either.
+  if (!isModuleVisible(visibility, 'projects')) results.projects = [];
+  if (!isModuleVisible(visibility, 'experience')) results.experience = [];
+  if (!isModuleVisible(visibility, 'certificates')) results.certificates = [];
+  if (!isModuleVisible(visibility, 'blog')) results.posts = [];
+
+  const visibleTotal =
     results.projects.length +
     results.experience.length +
     results.certificates.length +
@@ -79,12 +94,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           {loadFailed && (
             <p className="mt-4 text-sm text-slate-400">Search is unavailable right now. Please try again shortly.</p>
           )}
-          {!loadFailed && query.length >= 2 && total === 0 && (
+          {!loadFailed && query.length >= 2 && visibleTotal === 0 && (
             <p className="mt-4 text-sm text-slate-400">No matches for “{query}”.</p>
           )}
-          {!loadFailed && query.length >= 2 && total > 0 && (
+          {!loadFailed && query.length >= 2 && visibleTotal > 0 && (
             <p className="mt-4 text-sm text-slate-400">
-              {total} result{total === 1 ? '' : 's'} for “{query}”.
+              {visibleTotal} result{visibleTotal === 1 ? '' : 's'} for “{query}”.
             </p>
           )}
         </section>

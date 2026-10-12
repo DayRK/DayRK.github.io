@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { ALL_MODULES_VISIBLE, isModuleKey, type ModuleKey, type ModuleVisibility } from '@/lib/modules';
 
 type ProjectRecord = {
   id?: number;
@@ -547,6 +548,55 @@ export async function updateAvailability(status: string) {
   }
 
   await writeAuditLog({ action: 'update', entity: 'availability', actor: 'admin', detail: status });
+}
+
+/**
+ * Which modules the public may see.
+ *
+ * Deliberately fails soft: if the table is missing or the connection is down,
+ * every module is treated as visible. A hidden section is recoverable; a
+ * portfolio that renders nothing is not.
+ */
+export async function fetchModuleVisibility(): Promise<ModuleVisibility> {
+  if (!supabase) {
+    return { ...ALL_MODULES_VISIBLE };
+  }
+
+  const { data, error } = await supabase.from('module_visibility').select('module, visible');
+
+  if (error) {
+    console.error('Failed to load module visibility', error);
+    return { ...ALL_MODULES_VISIBLE };
+  }
+
+  const visibility = { ...ALL_MODULES_VISIBLE };
+
+  for (const row of data ?? []) {
+    const key = String(row.module ?? '');
+    if (isModuleKey(key)) {
+      visibility[key] = row.visible !== false;
+    }
+  }
+
+  return visibility;
+}
+
+export async function updateModuleVisibility(key: ModuleKey, visible: boolean) {
+  const { error } = await getAdminClient()
+    .from('module_visibility')
+    .upsert({ module: key, visible, updated_at: new Date().toISOString() }, { onConflict: 'module' });
+
+  if (error) {
+    throw error;
+  }
+
+  await writeAuditLog({
+    action: 'update',
+    entity: 'visibility',
+    entityId: key,
+    actor: 'admin',
+    detail: visible ? 'visible' : 'hidden',
+  });
 }
 
 type MediaRecord = {

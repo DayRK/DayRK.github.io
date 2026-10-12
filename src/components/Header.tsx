@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 
@@ -10,16 +10,40 @@ const NAV_ITEMS = [
   { id: 'projects', label: 'Projects' },
   { id: 'certificates', label: 'Certificates' },
   { id: 'contact', label: 'Contact' },
-];
+] as const;
 
-export default function Header({ name }: { name: string }) {
+export type HeaderVisibility = {
+  about: boolean;
+  experience: boolean;
+  projects: boolean;
+  certificates: boolean;
+  contact: boolean;
+  blog?: boolean;
+  resume?: boolean;
+};
+
+export default function Header({
+  name,
+  visible,
+}: {
+  name: string;
+  visible?: HeaderVisibility;
+}) {
   const [active, setActive] = useState<string>('');
   const [open, setOpen] = useState(false);
 
+  // A hidden module loses its nav link too — a link to a section that is not
+  // there is worse than no link at all.
+  // Memoised so the intersection observer is not rebuilt on every render.
+  const navItems = useMemo(
+    () => (visible ? NAV_ITEMS.filter((item) => visible[item.id] !== false) : NAV_ITEMS),
+    [visible?.about, visible?.experience, visible?.projects, visible?.certificates, visible?.contact],
+  );
+
   useEffect(() => {
-    const sections = NAV_ITEMS.map((item) => document.getElementById(item.id)).filter(
-      (node): node is HTMLElement => node !== null,
-    );
+    const sections = navItems
+      .map((item) => document.getElementById(item.id))
+      .filter((node): node is HTMLElement => node !== null);
 
     if (sections.length === 0) return;
 
@@ -35,7 +59,7 @@ export default function Header({ name }: { name: string }) {
 
     sections.forEach((section) => observer.observe(section));
     return () => observer.disconnect();
-  }, []);
+  }, [navItems]);
 
   const initials = name
     .split(' ')
@@ -57,7 +81,7 @@ export default function Header({ name }: { name: string }) {
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <a
               key={item.id}
               href={`#${item.id}`}
@@ -67,15 +91,21 @@ export default function Header({ name }: { name: string }) {
               {item.label}
             </a>
           ))}
-          <Link href="/blog" className="px-3 py-2 text-sm transition-colors" style={{ color: 'var(--text-muted)' }}>
-            Writing
-          </Link>
-          <Link href="/resume" className="px-3 py-2 text-sm transition-colors" style={{ color: 'var(--text-muted)' }}>
-            Resume
-          </Link>
-          <a href="#contact" className="btn btn-primary ml-2">
-            Get in touch
-          </a>
+          {visible?.blog === false ? null : (
+            <Link href="/blog" className="px-3 py-2 text-sm transition-colors" style={{ color: 'var(--text-muted)' }}>
+              Writing
+            </Link>
+          )}
+          {visible?.resume === false ? null : (
+            <Link href="/resume" className="px-3 py-2 text-sm transition-colors" style={{ color: 'var(--text-muted)' }}>
+              Resume
+            </Link>
+          )}
+          {visible?.contact === false ? null : (
+            <a href="#contact" className="btn btn-primary ml-2">
+              Get in touch
+            </a>
+          )}
         </nav>
 
         <button
@@ -93,7 +123,7 @@ export default function Header({ name }: { name: string }) {
       {open ? (
         <div className="border-t md:hidden" style={{ borderColor: 'var(--line)' }}>
           <div className="shell flex flex-col py-3">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <a
                 key={item.id}
                 href={`#${item.id}`}
@@ -104,12 +134,16 @@ export default function Header({ name }: { name: string }) {
                 {item.label}
               </a>
             ))}
-            <Link href="/blog" onClick={() => setOpen(false)} className="py-2.5 text-sm" style={{ color: 'var(--text-muted)' }}>
-              Writing
-            </Link>
-            <Link href="/resume" onClick={() => setOpen(false)} className="py-2.5 text-sm" style={{ color: 'var(--text-muted)' }}>
-              Resume
-            </Link>
+            {visible?.blog === false ? null : (
+              <Link href="/blog" onClick={() => setOpen(false)} className="py-2.5 text-sm" style={{ color: 'var(--text-muted)' }}>
+                Writing
+              </Link>
+            )}
+            {visible?.resume === false ? null : (
+              <Link href="/resume" onClick={() => setOpen(false)} className="py-2.5 text-sm" style={{ color: 'var(--text-muted)' }}>
+                Resume
+              </Link>
+            )}
           </div>
         </div>
       ) : null}

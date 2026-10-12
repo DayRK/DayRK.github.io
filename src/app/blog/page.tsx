@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { FileText, FlaskConical } from 'lucide-react';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import Footer from '@/components/Footer';
 import { socialLinks } from '@/data/siteContent';
-import { fetchPosts } from '@/lib/db';
+import { fetchPosts, fetchModuleVisibility } from '@/lib/db';
+import { resolveModuleAccess } from '@/lib/visibility';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,8 +16,16 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogIndexPage() {
+  // Hidden from the public: a visitor gets a 404, the admin still sees it.
+  const access = await resolveModuleAccess('blog');
+  if (!access.allowed) {
+    notFound();
+  }
+
   let posts: Awaited<ReturnType<typeof fetchPosts>> = [];
   let loadFailed = false;
+
+  const visibility = await fetchModuleVisibility();
 
   try {
     posts = await fetchPosts();

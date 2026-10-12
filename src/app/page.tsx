@@ -9,7 +9,9 @@ import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import ProjectsSection from '@/components/ProjectsSection';
 import { aboutContent, profile, socialLinks } from '@/data/siteContent';
-import { fetchAvailability, fetchCertificates, fetchExperience, fetchProjects } from '@/lib/db';
+import { fetchAvailability, fetchCertificates, fetchExperience, fetchModuleVisibility, fetchProjects } from '@/lib/db';
+import { isAdminSession } from '@/lib/visibility';
+import { isModuleVisible } from '@/lib/modules';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +47,18 @@ export default async function Home() {
   let availability = profile.availability;
   let loadFailed = false;
 
+  // Visibility decides what renders; a signed-in admin also gets the hidden
+  // sections back, clearly marked, so they can keep working on them.
+  const [visibility, adminSession] = await Promise.all([fetchModuleVisibility(), isAdminSession()]);
+
+  const show = (key: 'about' | 'projects' | 'experience' | 'certificates' | 'github' | 'contact') =>
+    isModuleVisible(visibility, key);
+
+  const previewMode = adminSession &&
+    (['about', 'projects', 'experience', 'certificates', 'github', 'contact'] as const).some(
+      (key) => !isModuleVisible(visibility, key),
+    );
+
   try {
     const [portfolioProjects, portfolioAvailability, portfolioExperience, portfolioCertificates] =
       await Promise.all([
@@ -74,9 +88,23 @@ export default async function Home() {
 
   return (
     <>
-      <Header name={profile.name} />
+      <Header
+        name={profile.name}
+        visible={{
+          about: show('about'),
+          experience: show('experience'),
+          projects: show('projects'),
+          certificates: show('certificates'),
+          contact: show('contact'),
+        }}
+      />
       <AnimatedBackground />
       <main id="main-content" className="shell">
+        {previewMode ? (
+          <p className="pt-6 text-xs font-medium uppercase tracking-[0.2em]" style={{ color: 'var(--text-faint)' }}>
+            Admin preview — hidden modules are shown to you only
+          </p>
+        ) : null}
         <HeroSection
           intro={profile.intro}
           description={profile.description}
@@ -85,13 +113,15 @@ export default async function Home() {
           name={profile.name}
           tagline={profile.tagline}
           stats={stats}
+          showContact={show('contact')}
+          showProjects={show('projects')}
         />
-        <ProjectsSection projects={projects} loadFailed={loadFailed} />
-        <ExperienceSection experience={experience} loadFailed={loadFailed} />
-        <AboutSection title={aboutContent.title} sections={aboutContent.sections} />
-        <CertificatesSection certificates={certificates} loadFailed={loadFailed} />
-        <GithubSection />
-        <ContactSection email={profile.email} />
+        {show('projects') ? <ProjectsSection projects={projects} loadFailed={loadFailed} /> : null}
+        {show('experience') ? <ExperienceSection experience={experience} loadFailed={loadFailed} /> : null}
+        {show('about') ? <AboutSection title={aboutContent.title} sections={aboutContent.sections} /> : null}
+        {show('certificates') ? <CertificatesSection certificates={certificates} loadFailed={loadFailed} /> : null}
+        {show('github') ? <GithubSection /> : null}
+        {show('contact') ? <ContactSection email={profile.email} /> : null}
         <Footer links={socialLinks} />
       </main>
     </>

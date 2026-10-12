@@ -1,8 +1,11 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { ArrowLeft, Github, Linkedin, Mail, MapPin } from 'lucide-react';
 import PrintButton from '@/components/PrintButton';
 import { aboutContent, profile, socialLinks } from '@/data/siteContent';
 import { fetchAvailability, fetchCertificates, fetchExperience, fetchProjects } from '@/lib/db';
+import { resolveModuleAccess } from '@/lib/visibility';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,6 +62,11 @@ function Section({
 }
 
 export default async function ResumePage() {
+  const access = await resolveModuleAccess('resume');
+  if (!access.allowed) {
+    notFound();
+  }
+
   let projects: PortfolioProject[] = [];
   let experience: PortfolioExperience[] = [];
   let certificates: PortfolioCertificate[] = [];

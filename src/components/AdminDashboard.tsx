@@ -19,6 +19,7 @@ import AdminContactPanel from '@/components/AdminContactPanel';
 import AdminMediaPanel from '@/components/AdminMediaPanel';
 import AdminPostsPanel from '@/components/AdminPostsPanel';
 import AdminSystemPanel from '@/components/AdminSystemPanel';
+import AdminVisibilityPanel from '@/components/AdminVisibilityPanel';
 
 type Project = {
   id?: number;
@@ -68,7 +69,7 @@ export default function AdminDashboard(_props: AdminDashboardProps) {
   const [error, setError] = useState('');
   const [statusMessage, setStatusMessage] = useState<{ text: string; tone: 'success' | 'error' } | null>(null);
   const [previewProject, setPreviewProject] = useState<Project | null>(null);
-  const [activeTab, setActiveTab] = useState<'projects' | 'experience' | 'certificates' | 'posts' | 'media' | 'inbox' | 'system'>('projects');
+  const [activeTab, setActiveTab] = useState<'projects' | 'experience' | 'certificates' | 'posts' | 'media' | 'inbox' | 'system' | 'visibility'>('projects');
 
   useEffect(() => {
     if (!statusMessage) return;
@@ -281,7 +282,7 @@ export default function AdminDashboard(_props: AdminDashboardProps) {
         )}
 
         <div className="flex flex-wrap gap-2">
-          {(['projects', 'experience', 'certificates', 'posts', 'media', 'inbox', 'system'] as const).map((tab) => (
+          {(['projects', 'experience', 'certificates', 'posts', 'media', 'inbox', 'system', 'visibility'] as const).map((tab) => (
             <Button
               key={tab}
               size="sm"
@@ -581,6 +582,8 @@ export default function AdminDashboard(_props: AdminDashboardProps) {
           <AdminContactPanel />
         ) : activeTab === 'system' ? (
           <AdminSystemPanel />
+        ) : activeTab === 'visibility' ? (
+          <AdminVisibilityPanel />
         ) : (
           <AdminContentPanels />
         )}

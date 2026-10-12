@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import Footer from '@/components/Footer';
 import { socialLinks } from '@/data/siteContent';
-import { fetchPostBySlug } from '@/lib/db';
+import { fetchPostBySlug, fetchModuleVisibility } from '@/lib/db';
+import { resolveModuleAccess } from '@/lib/visibility';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +35,14 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 }
 
 export default async function PostPage({ params }: PostPageProps) {
+  // A hidden Writing module hides every post too, drafts and all.
+  const access = await resolveModuleAccess('blog');
+  if (!access.allowed) {
+    notFound();
+  }
+
   const { slug } = await params;
+  const visibility = await fetchModuleVisibility();
   const post = await fetchPostBySlug(slug).catch((error) => {
     console.error('Failed to load post', error);
     return null;

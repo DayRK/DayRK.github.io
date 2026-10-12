@@ -116,6 +116,21 @@ export const ContactSchema = z.object({
   website: z.string().max(200).optional().default(''),
 });
 
+export const ModuleVisibilitySchema = z.object({
+  module: z.enum([
+    'about',
+    'projects',
+    'experience',
+    'certificates',
+    'github',
+    'contact',
+    'blog',
+    'resume',
+    'search',
+  ]),
+  visible: z.boolean(),
+});
+
 export const SearchQuerySchema = z.object({
   q: z
     .string()

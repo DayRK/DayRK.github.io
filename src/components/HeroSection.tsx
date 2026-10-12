@@ -9,6 +9,8 @@ type HeroSectionProps = {
   name: string;
   tagline: string;
   stats: Stat[];
+  showContact?: boolean;
+  showProjects?: boolean;
 };
 
 export default function HeroSection({
@@ -19,6 +21,8 @@ export default function HeroSection({
   name,
   tagline,
   stats,
+  showContact = true,
+  showProjects = true,
 }: HeroSectionProps) {
   return (
     <section className="pb-20 pt-20 md:pt-28">
@@ -37,13 +41,21 @@ export default function HeroSection({
       </p>
 
       <div className="mt-9 flex flex-wrap items-center gap-3">
-        <a href="#projects" className="btn btn-primary">
-          View work
-          <ArrowRight size={16} />
-        </a>
-        <a href={`mailto:${email}`} className="btn btn-ghost">
-          Email me
-        </a>
+        {showProjects ? (
+          <a href="#projects" className="btn btn-primary">
+            View work
+            <ArrowRight size={16} />
+          </a>
+        ) : null}
+        {showContact ? (
+          <a href="#contact" className="btn btn-ghost">
+            Get in touch
+          </a>
+        ) : (
+          <a href={`mailto:${email}`} className="btn btn-ghost">
+            Email me
+          </a>
+        )}
       </div>
 
       <p className="mt-6 inline-flex items-center gap-2 text-sm" style={{ color: 'var(--text-faint)' }}>

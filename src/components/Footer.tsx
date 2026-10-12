@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Github, Linkedin } from 'lucide-react';
 
 type FooterProps = {
@@ -28,16 +27,6 @@ export default function Footer({ links }: FooterProps) {
         </p>
 
         <div className="flex flex-wrap items-center gap-4">
-          <Link href="/blog" className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Writing
-          </Link>
-          <Link href="/search" className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Search
-          </Link>
-          <Link href="/resume" className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Resume
-          </Link>
-          <span className="hidden h-4 w-px sm:block" style={{ background: 'var(--line-strong)' }} />
           {links.map((link) => (
             <a
               key={link.label}
