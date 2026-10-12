@@ -34,6 +34,9 @@ export default function Footer({ links }: FooterProps) {
           <Link href="/search" className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Search
           </Link>
+          <Link href="/resume" className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Resume
+          </Link>
           <span className="hidden h-4 w-px sm:block" style={{ background: 'var(--line-strong)' }} />
           {links.map((link) => (
             <a

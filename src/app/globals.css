@@ -175,4 +175,114 @@
     outline: none;
     border-color: var(--line-strong);
   }
+
+  /* ---- Resume ---- */
+  .resume-paper {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+  }
+
+  .resume-label {
+    color: var(--accent);
+  }
+
+  .resume-rule {
+    border-color: var(--line-strong);
+  }
+
+  .resume-name {
+    color: var(--text);
+  }
+
+  .resume-role {
+    color: var(--accent);
+  }
+
+  .resume-contact,
+  .resume-body {
+    color: var(--text-muted);
+  }
+
+  .resume-contact a:hover {
+    color: var(--text);
+  }
+
+  .resume-strong {
+    color: var(--text);
+  }
+
+  .resume-muted {
+    color: var(--text-faint);
+  }
+}
+
+/*
+ * Resume print sheet. Screen shows the dark theme; paper is always light, so
+ * the tokens are overridden to ink-on-white here and any decoration is removed.
+ */
+@page {
+  margin: 14mm;
+}
+
+@media print {
+  :root {
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  .no-print,
+  .skip-link {
+    display: none !important;
+  }
+
+  .resume-paper {
+    background: #ffffff !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    box-shadow: none !important;
+  }
+
+  .resume-name,
+  .resume-strong {
+    color: #111111 !important;
+  }
+
+  .resume-label {
+    color: #6d28d9 !important;
+  }
+
+  .resume-role {
+    color: #4c1d95 !important;
+  }
+
+  .resume-contact,
+  .resume-body {
+    color: #333333 !important;
+  }
+
+  .resume-muted {
+    color: #555555 !important;
+  }
+
+  .resume-rule {
+    border-color: #d4d4d8 !important;
+  }
+
+  /* Keep a role, project or certificate from splitting across pages. */
+  .resume-paper li,
+  .resume-paper section {
+    break-inside: avoid;
+  }
+
+  a {
+    text-decoration: none;
+  }
 }

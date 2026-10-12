@@ -70,6 +70,9 @@ export default function Header({ name }: { name: string }) {
           <Link href="/blog" className="px-3 py-2 text-sm transition-colors" style={{ color: 'var(--text-muted)' }}>
             Writing
           </Link>
+          <Link href="/resume" className="px-3 py-2 text-sm transition-colors" style={{ color: 'var(--text-muted)' }}>
+            Resume
+          </Link>
           <a href="#contact" className="btn btn-primary ml-2">
             Get in touch
           </a>
@@ -103,6 +106,9 @@ export default function Header({ name }: { name: string }) {
             ))}
             <Link href="/blog" onClick={() => setOpen(false)} className="py-2.5 text-sm" style={{ color: 'var(--text-muted)' }}>
               Writing
+            </Link>
+            <Link href="/resume" onClick={() => setOpen(false)} className="py-2.5 text-sm" style={{ color: 'var(--text-muted)' }}>
+              Resume
             </Link>
           </div>
         </div>
