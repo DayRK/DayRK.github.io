@@ -1,7 +1,5 @@
-'use client';
-
+import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
-import { Button, Card, CardBody, Chip } from '@heroui/react';
 
 type Project = {
   id?: number;
@@ -12,60 +10,65 @@ type Project = {
   showPreview?: boolean;
 };
 
-type ProjectsSectionProps = {
+export default function ProjectsSection({
+  projects,
+  loadFailed,
+}: {
   projects: Project[];
   loadFailed?: boolean;
-};
+}) {
+  if (!loadFailed && projects.length === 0) return null;
 
-export default function ProjectsSection({ projects, loadFailed }: ProjectsSectionProps) {
   return (
-    <section id="projects" className="glass-card rounded-[2rem] p-8 lg:p-10">
-      <div className="mb-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-fuchsia-300">Featured Projects</p>
-        {loadFailed && (
-          <p className="mt-3 text-sm text-slate-400">
-            Project content is unavailable right now. Please check back in a moment.
-          </p>
-        )}
+    <section id="projects" className="section">
+      <div className="mb-10 flex items-end justify-between gap-6">
+        <div>
+          <p className="eyebrow">002 / Work</p>
+          <h2 className="heading mt-2">Selected projects</h2>
+        </div>
+        <Link href="/search" className="hidden text-sm sm:block" style={{ color: 'var(--text-muted)' }}>
+          Search all content
+        </Link>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+      {loadFailed ? (
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          Project content is unavailable right now. Please check back in a moment.
+        </p>
+      ) : null}
+
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((project, index) => (
-          <Card
-            key={project.id ?? project.title ?? index}
-            className="flex h-full flex-col rounded-[1.25rem] border border-white/10 bg-slate-900/70 shadow-none"
+          <article
+            key={project.id ?? `${project.title}-${index}`}
+            className="card card-hover flex flex-col p-5"
           >
-            <CardBody className="gap-0 p-4 sm:p-5">
-              <h3 className="text-xl font-semibold tracking-tight">{project.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-300">{project.summary}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {project.stack.map((item) => (
-                  <Chip
-                    key={item}
-                    size="sm"
-                    variant="flat"
-                    className="border border-white/10 bg-slate-800/80 text-xs text-slate-300"
-                  >
-                    {item}
-                  </Chip>
-                ))}
-              </div>
-              {(project.showPreview ?? true) ? (
-                <Button
-                  as="a"
-                  href={project.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  size="sm"
-                  radius="full"
-                  variant="flat"
-                  endContent={<ArrowUpRight size={16} />}
-                  className="mt-5 self-start border border-fuchsia-400/30 bg-fuchsia-400/10 font-medium text-fuchsia-200"
-                >
-                  View Live
-                </Button>
-              ) : null}
-            </CardBody>
-          </Card>
+            <h3 className="text-lg font-semibold">{project.title}</h3>
+            <p className="mt-3 flex-1 text-sm leading-7" style={{ color: 'var(--text-muted)' }}>
+              {project.summary}
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {project.stack.map((item) => (
+                <span key={item} className="chip">
+                  {item}
+                </span>
+              ))}
+            </div>
+
+            {(project.showPreview ?? true) && project.link ? (
+              <a
+                href={project.link}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium"
+                style={{ color: 'var(--accent)' }}
+              >
+                View live
+                <ArrowUpRight size={15} />
+              </a>
+            ) : null}
+          </article>
         ))}
       </div>
     </section>

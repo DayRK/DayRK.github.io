@@ -101,6 +101,12 @@ export const ContactSchema = z.object({
     .trim()
     .optional()
     .default(''),
+  budget: z
+    .string()
+    .max(50, 'Budget must be 50 characters or less')
+    .trim()
+    .optional()
+    .default(''),
   message: z
     .string()
     .min(10, 'Message must be at least 10 characters')

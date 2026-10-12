@@ -156,12 +156,16 @@ create table if not exists public.contact_messages (
   name text not null,
   email text not null,
   subject text not null default '',
+  budget text not null default '',
   message text not null,
   is_read boolean not null default false,
   created_at timestamptz not null default now()
 );
 
 create index if not exists contact_messages_created_at_idx on public.contact_messages (created_at desc);
+
+-- Added after the first release, so existing databases pick it up safely.
+alter table public.contact_messages add column if not exists budget text not null default '';
 
 alter table public.media enable row level security;
 alter table public.contact_messages enable row level security;

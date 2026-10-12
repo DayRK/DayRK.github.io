@@ -2,56 +2,177 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
+@layer base {
+  :root {
+    color-scheme: dark;
+
+    /* Surfaces */
+    --bg: #0b0614;
+    --surface: #130b20;
+    --surface-2: #1a1029;
+    --surface-3: #221534;
+
+    /* Hairlines */
+    --line: rgba(167, 139, 250, 0.14);
+    --line-strong: rgba(167, 139, 250, 0.3);
+
+    /* Text */
+    --text: #f5f3ff;
+    --text-muted: #a79fc0;
+    --text-faint: #6f6788;
+
+    /* Accent */
+    --accent: #8b5cf6;
+    --accent-strong: #7c3aed;
+    --accent-soft: rgba(139, 92, 246, 0.12);
+
+    /* One radius scale */
+    --r-sm: 10px;
+    --r-md: 16px;
+    --r-lg: 24px;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
-html {
-  scroll-behavior: smooth;
-}
+@layer components {
+  .shell {
+    @apply mx-auto w-full max-w-5xl px-6;
+  }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  overflow-x: hidden;
-  background: radial-gradient(circle at top left, rgba(168, 85, 247, 0.18), transparent 28%),
-    linear-gradient(135deg, #04010d 0%, #12081f 45%, #080511 100%);
-  color: #f8fafc;
-  font-family: Arial, Helvetica, sans-serif;
-}
+  /* legacy wrapper kept so older pages still lay out correctly */
+  .portfolio-shell {
+    @apply mx-auto w-full max-w-5xl px-6;
+  }
 
-* {
-  box-sizing: border-box;
-}
+  .section {
+    @apply border-t py-20;
+    border-color: var(--line);
+    scroll-margin-top: 88px;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+  .eyebrow {
+    @apply font-mono text-xs uppercase;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+  }
 
-::selection {
-  background: rgba(192, 132, 252, 0.45);
-  color: #fdf4ff;
-}
+  .heading {
+    @apply text-3xl font-semibold md:text-4xl;
+    color: var(--text);
+  }
 
-.portfolio-shell {
-  position: relative;
-  min-height: 100vh;
-  padding: 2rem 1rem 3rem;
-  overflow-x: hidden;
-}
+  .subtext {
+    color: var(--text-muted);
+  }
 
-.glass-card {
-  background: rgba(10, 8, 24, 0.78);
-  border: 1px solid rgba(192, 132, 252, 0.16);
-  box-shadow: 0 20px 70px rgba(4, 2, 16, 0.45);
-  backdrop-filter: blur(24px);
-}
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+  }
 
-.orb {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(70px);
-  opacity: 0.3;
-  pointer-events: none;
+  /* kept so older markup never renders unstyled */
+  .glass-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+  }
+
+  .card-hover {
+    transition: border-color 0.18s ease, transform 0.18s ease;
+  }
+
+  .card-hover:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-2px);
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium;
+    border-radius: var(--r-sm);
+    transition: background-color 0.15s ease, border-color 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .btn-primary {
+    background: var(--accent-strong);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent);
+  }
+
+  .btn-ghost {
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+  }
+
+  .btn-ghost:hover {
+    background: var(--accent-soft);
+  }
+
+  .chip {
+    @apply inline-flex items-center px-2.5 py-1 text-xs;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    color: var(--text-muted);
+  }
+
+  .field {
+    @apply w-full px-3.5 py-2.5 text-sm;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    color: var(--text);
+  }
+
+  .field::placeholder {
+    color: var(--text-faint);
+  }
+
+  .field:focus {
+    outline: none;
+    border-color: var(--line-strong);
+  }
 }

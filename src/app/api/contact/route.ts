@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
       name: validationResult.data.name,
       email: validationResult.data.email,
       subject: validationResult.data.subject,
+      budget: validationResult.data.budget,
       message: validationResult.data.message,
     });
 

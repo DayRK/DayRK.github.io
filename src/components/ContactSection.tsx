@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Card, CardBody, Input, Textarea } from '@heroui/react';
 import { Mail, Send } from 'lucide-react';
 
 type ContactSectionProps = {
@@ -12,11 +11,27 @@ type FormState = {
   name: string;
   email: string;
   subject: string;
+  budget: string;
   message: string;
   website: string;
 };
 
-const EMPTY_FORM: FormState = { name: '', email: '', subject: '', message: '', website: '' };
+const EMPTY_FORM: FormState = {
+  name: '',
+  email: '',
+  subject: '',
+  budget: '',
+  message: '',
+  website: '',
+};
+
+const BUDGET_OPTIONS = [
+  'Under ₱10,000',
+  '₱10,000 – ₱25,000',
+  '₱25,000 – ₱50,000',
+  '₱50,000 +',
+  'Not sure yet',
+];
 
 export default function ContactSection({ email }: ContactSectionProps) {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -27,7 +42,9 @@ export default function ContactSection({ email }: ContactSectionProps) {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const submit = async () => {
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
     if (!form.name.trim() || !form.email.trim() || form.message.trim().length < 10) {
       setStatus({ text: 'Please add your name, email and a short message (10+ characters).', tone: 'error' });
       return;
@@ -58,91 +75,116 @@ export default function ContactSection({ email }: ContactSectionProps) {
   };
 
   return (
-    <section id="contact" className="glass-card overflow-hidden rounded-[2rem] p-8 lg:p-10">
-      <div className="flex flex-col gap-8 lg:flex-row">
-        <div className="flex-1 space-y-4">
-          <p className="text-sm font-semibold uppercase tracking-[0.35em] text-fuchsia-300">Contact</p>
-          <h2 className="text-3xl font-semibold sm:text-4xl">Let&apos;s build something.</h2>
-          <p className="max-w-md text-lg leading-8 text-slate-300">
-            Have a project, a role or a question? Send a message and I&apos;ll reply directly.
+    <section id="contact" className="section">
+      <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr]">
+        <div>
+          <p className="eyebrow">006 / Contact</p>
+          <h2 className="heading mt-2">Let&apos;s build something.</h2>
+          <p className="mt-4 max-w-md leading-7" style={{ color: 'var(--text-muted)' }}>
+            Tell me what you have in mind — a project, a role or a question. I reply directly to every
+            message.
           </p>
           <a
             href={`mailto:${email}`}
-            className="inline-flex items-center gap-2 text-fuchsia-200 transition hover:text-fuchsia-100"
+            className="mt-6 inline-flex items-center gap-2 text-sm"
+            style={{ color: 'var(--accent)' }}
           >
-            <Mail size={18} />
-            <span>{email}</span>
+            <Mail size={16} />
+            {email}
           </a>
         </div>
 
-        <div className="flex-1">
-          <Card className="rounded-[1.5rem] border border-white/10 bg-slate-900/70 shadow-[0_12px_45px_rgba(2,6,23,0.35)]">
-            <CardBody className="gap-4 p-6">
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <Input
-                  label="Name"
-                  variant="bordered"
-                  value={form.name}
-                  onValueChange={(value) => update('name', value)}
-                  classNames={{ inputWrapper: 'bg-slate-700/80 border border-white/10' }}
-                />
-                <Input
-                  label="Email"
-                  type="email"
-                  variant="bordered"
-                  value={form.email}
-                  onValueChange={(value) => update('email', value)}
-                  classNames={{ inputWrapper: 'bg-slate-700/80 border border-white/10' }}
-                />
-              </div>
-
-              <Input
-                label="Subject (optional)"
-                variant="bordered"
-                value={form.subject}
-                onValueChange={(value) => update('subject', value)}
-                classNames={{ inputWrapper: 'bg-slate-700/80 border border-white/10' }}
-              />
-
-              <Textarea
-                label="Message"
-                minRows={4}
-                variant="bordered"
-                value={form.message}
-                onValueChange={(value) => update('message', value)}
-                classNames={{ inputWrapper: 'bg-slate-700/80 border border-white/10' }}
-              />
-
-              {/* Honeypot: hidden from people, tempting to bots. */}
+        <form onSubmit={submit} className="flex flex-col gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                Name
+              </span>
               <input
-                type="text"
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden="true"
-                value={form.website}
-                onChange={(event) => update('website', event.target.value)}
-                className="hidden"
+                className="field"
+                value={form.name}
+                onChange={(event) => update('name', event.target.value)}
+                autoComplete="name"
               />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                Email
+              </span>
+              <input
+                className="field"
+                type="email"
+                value={form.email}
+                onChange={(event) => update('email', event.target.value)}
+                autoComplete="email"
+              />
+            </label>
+          </div>
 
-              {status && (
-                <p className={status.tone === 'success' ? 'text-sm text-emerald-300' : 'text-sm text-red-300'}>
-                  {status.text}
-                </p>
-              )}
-
-              <Button
-                color="secondary"
-                radius="full"
-                isLoading={sending}
-                onPress={submit}
-                endContent={!sending ? <Send size={16} /> : undefined}
-                className="font-medium"
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                Subject <span style={{ color: 'var(--text-faint)' }}>(optional)</span>
+              </span>
+              <input
+                className="field"
+                value={form.subject}
+                onChange={(event) => update('subject', event.target.value)}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                Budget range
+              </span>
+              <select
+                className="field"
+                value={form.budget}
+                onChange={(event) => update('budget', event.target.value)}
               >
-                {sending ? 'Sending...' : 'Send message'}
-              </Button>
-            </CardBody>
-          </Card>
-        </div>
+                <option value="">Select a range</option>
+                {BUDGET_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+              What are you building?
+            </span>
+            <textarea
+              className="field resize-y"
+              rows={5}
+              value={form.message}
+              onChange={(event) => update('message', event.target.value)}
+            />
+          </label>
+
+          {/* Honeypot: hidden from people, tempting to bots. */}
+          <input
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            value={form.website}
+            onChange={(event) => update('website', event.target.value)}
+            className="hidden"
+          />
+
+          {status ? (
+            <p className="text-sm" style={{ color: status.tone === 'success' ? '#6ee7b7' : '#fca5a5' }}>
+              {status.text}
+            </p>
+          ) : null}
+
+          <button type="submit" disabled={sending} className="btn btn-primary self-start disabled:opacity-60">
+            {sending ? 'Sending…' : 'Send message'}
+            {!sending ? <Send size={15} /> : null}
+          </button>
+        </form>
       </div>
     </section>
   );

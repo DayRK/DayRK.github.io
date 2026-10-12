@@ -15,24 +15,36 @@ function FiverrIcon() {
 
 export default function Footer({ links }: FooterProps) {
   const renderIcon = (iconName: 'linkedin' | 'github' | 'fiverr') => {
-    if (iconName === 'linkedin') return <Linkedin size={18} />;
-    if (iconName === 'github') return <Github size={18} />;
+    if (iconName === 'linkedin') return <Linkedin size={16} />;
+    if (iconName === 'github') return <Github size={16} />;
     return <FiverrIcon />;
   };
 
   return (
-    <footer id="footer" className="glass-card rounded-[2rem] p-8 lg:p-10">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <p className="text-sm text-slate-400">© 2026 Jan Patrick Bejare | National University - Manila</p>
-        <div className="flex flex-wrap items-center gap-3">
-          <Link href="/search" className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20">
-            Search
-          </Link>
-          <Link href="/blog" className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20">
+    <footer className="section pb-14">
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <p className="text-sm" style={{ color: 'var(--text-faint)' }}>
+          © 2026 Jan Patrick Bejare · National University – Manila
+        </p>
+
+        <div className="flex flex-wrap items-center gap-4">
+          <Link href="/blog" className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Writing
           </Link>
+          <Link href="/search" className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Search
+          </Link>
+          <span className="hidden h-4 w-px sm:block" style={{ background: 'var(--line-strong)' }} />
           {links.map((link) => (
-            <a key={link.label} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label} className="rounded-full border border-white/15 bg-white/10 p-3 text-white transition hover:bg-white/20">
+            <a
+              key={link.label}
+              href={link.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={link.label}
+              className="transition-colors"
+              style={{ color: 'var(--text-muted)' }}
+            >
               {renderIcon(link.iconName)}
             </a>
           ))}

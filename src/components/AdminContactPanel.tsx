@@ -105,6 +105,9 @@ export default function AdminContactPanel() {
                       {message.name} <span className="font-normal text-slate-400">&lt;{message.email}&gt;</span>
                     </p>
                     {message.subject && <p className="text-sm text-slate-300">{message.subject}</p>}
+                    {message.budget && (
+                      <p className="mt-1 font-mono text-xs text-fuchsia-300">Budget: {message.budget}</p>
+                    )}
                   </div>
                   <span className="text-xs text-slate-500">
                     {message.createdAt ? new Date(message.createdAt).toLocaleString() : ''}

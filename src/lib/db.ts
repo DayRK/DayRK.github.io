@@ -576,6 +576,7 @@ type ContactRecord = {
   name?: string;
   email?: string;
   subject?: string | null;
+  budget?: string | null;
   message?: string;
   is_read?: boolean | null;
   created_at?: string | null;
@@ -586,6 +587,7 @@ export type ContactMessage = {
   name: string;
   email: string;
   subject: string;
+  budget: string;
   message: string;
   isRead: boolean;
   createdAt: string | null;
@@ -610,6 +612,7 @@ function normalizeContact(raw: ContactRecord): ContactMessage {
     name: String(raw.name ?? ''),
     email: String(raw.email ?? ''),
     subject: String(raw.subject ?? ''),
+    budget: String(raw.budget ?? ''),
     message: String(raw.message ?? ''),
     isRead: raw.is_read === true,
     createdAt: raw.created_at ? String(raw.created_at) : null,
@@ -713,12 +716,14 @@ export async function createContactMessage(input: {
   name: string;
   email: string;
   subject: string;
+  budget: string;
   message: string;
 }): Promise<void> {
   const { error } = await getAdminClient().from('contact_messages').insert({
     name: input.name,
     email: input.email,
     subject: input.subject,
+    budget: input.budget,
     message: input.message,
   });
 
@@ -730,7 +735,7 @@ export async function createContactMessage(input: {
 export async function fetchContactMessages() {
   const { data, error } = await getAdminClient()
     .from('contact_messages')
-    .select('id, name, email, subject, message, is_read, created_at')
+    .select('id, name, email, subject, budget, message, is_read, created_at')
     .order('created_at', { ascending: false })
     .limit(200);
 

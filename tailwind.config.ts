@@ -9,15 +9,16 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
-      colors: {
-        background: '#030711',
-        foreground: '#f8fafc',
-        muted: '#94a3b8',
-        accent: '#7dd3fc',
-        accent2: '#a78bfa',
+      fontFamily: {
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
-      boxShadow: {
-        glow: '0 0 0 1px rgba(125,211,252,0.25), 0 20px 80px rgba(15,23,42,0.45)',
+      colors: {
+        background: '#0b0614',
+        foreground: '#f5f3ff',
+        muted: '#a79fc0',
+        accent: '#8b5cf6',
+        accent2: '#a78bfa',
       },
     },
   },
