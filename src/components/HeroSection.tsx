@@ -1,5 +1,8 @@
+'use client';
+
 import { ArrowRight, BookOpen } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@heroui/react';
 import AnimatedText from './AnimatedText';
 
 type HeroSectionProps = {
@@ -33,12 +36,25 @@ export default function HeroSection({ intro, description, email, availability, f
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-            <Link href="#projects" className="inline-flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-6 py-3 font-medium text-fuchsia-200 transition hover:bg-fuchsia-400/20">
+            <Button
+              as={Link}
+              href="#projects"
+              radius="full"
+              variant="flat"
+              className="border border-fuchsia-400/30 bg-fuchsia-400/10 px-6 py-3 font-medium text-fuchsia-200"
+            >
               View Work
-            </Link>
-            <a href={`mailto:${email}`} className="inline-flex items-center gap-2 rounded-full bg-fuchsia-500 px-6 py-3 font-medium text-white transition hover:bg-fuchsia-600">
-              Contact Me <ArrowRight size={18} />
-            </a>
+            </Button>
+            <Button
+              as="a"
+              href={`mailto:${email}`}
+              radius="full"
+              color="secondary"
+              endContent={<ArrowRight size={18} />}
+              className="px-6 py-3 font-medium"
+            >
+              Contact Me
+            </Button>
           </div>
         </div>
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Braces, CircuitBoard, Code2, Cpu, Database, FlaskConical, Layers3, LaptopMinimal, MonitorSmartphone, ServerCog, ShieldCheck, SquareTerminal } from 'lucide-react';
 
 type AboutSectionProps = {
@@ -15,7 +16,7 @@ const sectionIconMap = {
   Hardware: <Cpu size={16} />,
 };
 
-const itemIconMap: Record<string, JSX.Element> = {
+const itemIconMap: Record<string, ReactNode> = {
   JavaScript: <Braces size={14} />,
   PHP: <Code2 size={14} />,
   Lua: <SquareTerminal size={14} />,

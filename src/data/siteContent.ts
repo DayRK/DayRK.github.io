@@ -35,27 +35,7 @@ export const aboutContent = {
   ],
 };
 
-export const projects = [
-  {
-    title: 'Aurora Finance',
-    summary: 'A secure analytics platform with a polished experience and modern architecture.',
-    stack: ['Next.js', 'TypeScript', 'Design Systems'],
-    link: 'https://example.com/aurora-finance',
-  },
-  {
-    title: 'Northwind Commerce',
-    summary: 'An e-commerce experience focused on conversion, accessibility, and performance.',
-    stack: ['React', 'Tailwind', 'Accessibility'],
-    link: 'https://example.com/northwind-commerce',
-  },
-  {
-    title: 'Lumen Health',
-    summary: 'A patient-first web product designed to simplify complex workflows and improve trust.',
-    stack: ['UX Strategy', 'Frontend', 'Product Design'],
-    link: 'https://example.com/lumen-health',
-  },
-];
-
+// Add your real profile addresses here. Until then these stay as '#'.
 export const socialLinks = [
   { label: 'LinkedIn', href: '#', iconName: 'linkedin' as const },
   { label: 'GitHub', href: 'https://github.com/DayRK', iconName: 'github' as const },

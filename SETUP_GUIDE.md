@@ -19,6 +19,7 @@ create table if not exists projects (
   summary text not null,
   stack jsonb not null default '[]'::jsonb,
   link text not null,
+  show_preview boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -34,16 +35,23 @@ values (1, 'Open to Commissions')
 on conflict (id) do nothing;
 ```
 
+The full file, including the row level security policies, is in `supabase-schema.sql` at the project root. Run that one for a complete setup.
+
 ### 3. Add the environment variables
 Create a `.env.local` file in the project root and drop in your Supabase values:
 
 ```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+ADMIN_PASSWORD=choose-a-long-unique-password
+JWT_SECRET=paste-a-long-random-string-at-least-32-characters
 ```
+
+Notes:
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` is public and safe to expose. It is used for reads and row level security still applies to it.
+- `SUPABASE_SERVICE_ROLE_KEY` bypasses row level security. It is used only inside the API routes on the server, so never add the `NEXT_PUBLIC_` prefix to it.
+- There is no fallback password or secret. The app refuses to log anyone in if `ADMIN_PASSWORD` or `JWT_SECRET` is missing.
 
 ## What this portfolio includes
 

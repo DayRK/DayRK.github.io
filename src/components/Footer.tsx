@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Github, Linkedin } from 'lucide-react';
 
 type FooterProps = {
@@ -24,6 +25,12 @@ export default function Footer({ links }: FooterProps) {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <p className="text-sm text-slate-400">© 2026 Jan Patrick Bejare | National University - Manila</p>
         <div className="flex flex-wrap items-center gap-3">
+          <Link href="/search" className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20">
+            Search
+          </Link>
+          <Link href="/blog" className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20">
+            Writing
+          </Link>
           {links.map((link) => (
             <a key={link.label} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label} className="rounded-full border border-white/15 bg-white/10 p-3 text-white transition hover:bg-white/20">
               {renderIcon(link.iconName)}

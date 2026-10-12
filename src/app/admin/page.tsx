@@ -2,20 +2,44 @@
 
 import { useEffect, useState } from 'react';
 import AdminDashboard from '@/components/AdminDashboard';
+import { Button, Card, CardBody, Input } from '@heroui/react';
 
 export default function AdminPage() {
-  const [token, setToken] = useState<string | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [checkedSession, setCheckedSession] = useState(false);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // The session lives in an HTTP-only cookie, so the page cannot read it.
+  // It asks the server whether that cookie is still valid instead.
   useEffect(() => {
-    try {
-      const storedToken = window.localStorage.getItem('adminToken');
-      setToken(storedToken);
-    } catch {
-      setToken(null);
+    let isActive = true;
+
+    async function checkSession() {
+      try {
+        const response = await fetch('/api/auth/session');
+        const data = await response.json();
+
+        if (isActive) {
+          setAuthenticated(Boolean(data.authenticated));
+        }
+      } catch {
+        if (isActive) {
+          setAuthenticated(false);
+        }
+      } finally {
+        if (isActive) {
+          setCheckedSession(true);
+        }
+      }
     }
+
+    checkSession();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -36,75 +60,89 @@ export default function AdminPage() {
         return;
       }
 
-      const data = await response.json();
-      localStorage.setItem('adminToken', data.token);
-      setToken(data.token);
+      // No token is stored here on purpose: the server set the cookie.
+      setAuthenticated(true);
       setPassword('');
-    } catch (err) {
+    } catch {
       setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    setToken(null);
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // Even if the request fails, drop the local view of the session.
+    }
+
+    setAuthenticated(false);
   };
 
-  if (!token) {
+  if (!checkedSession) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
-        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-900/80 backdrop-blur p-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Admin Access</h1>
-          <p className="text-slate-400 mb-8">Enter your password to continue</p>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4">
+        <p className="text-slate-400">Checking your session...</p>
+      </div>
+    );
+  }
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            {error && (
-              <div className="rounded-lg bg-red-500/20 border border-red-500/50 p-3 text-red-200 text-sm">
-                {error}
-              </div>
-            )}
+  if (!authenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4">
+        <Card className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-900/80 backdrop-blur">
+          <CardBody className="p-8">
+            <h1 className="mb-2 text-3xl font-bold text-white">Admin Access</h1>
+            <p className="mb-8 text-slate-400">Enter your password to continue</p>
 
-            <input
-              type="password"
-              placeholder="Admin Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-              className="w-full rounded-lg bg-slate-800 border border-white/10 px-4 py-3 text-white placeholder-slate-500 focus:border-fuchsia-400 focus:outline-none disabled:opacity-50 transition"
-              required
-            />
+            <form onSubmit={handleLogin} className="space-y-4">
+              {error && (
+                <div className="rounded-lg border border-red-500/50 bg-red-500/20 p-3 text-sm text-red-200">
+                  {error}
+                </div>
+              )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-fuchsia-600 px-4 py-3 font-medium text-white hover:bg-fuchsia-700 disabled:opacity-50 transition"
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-          </form>
+              <Input
+                type="password"
+                label="Admin password"
+                labelPlacement="outside"
+                placeholder="Admin Password"
+                value={password}
+                onValueChange={setPassword}
+                isDisabled={loading}
+                classNames={{ inputWrapper: 'bg-slate-800 border border-white/10' }}
+              />
 
-          <p className="text-xs text-slate-500 mt-6 text-center">
-            🔒 This area is protected with JWT authentication and rate limiting
-          </p>
-        </div>
+              <Button
+                type="submit"
+                fullWidth
+                color="secondary"
+                isLoading={loading}
+                className="py-3 font-medium"
+              >
+                {loading ? 'Logging in...' : 'Login'}
+              </Button>
+            </form>
+
+            <p className="mt-6 text-center text-xs text-slate-500">
+              Protected with an HTTP-only session cookie and rate limiting
+            </p>
+          </CardBody>
+        </Card>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between bg-slate-900/50 border-b border-white/10 p-4 sticky top-0 z-50">
+      <div className="sticky top-0 z-50 flex items-center justify-between border-b border-white/10 bg-slate-900/50 p-4">
         <h1 className="text-xl font-semibold text-white">Admin Dashboard</h1>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 rounded-lg bg-red-600 text-sm font-medium text-white hover:bg-red-700 transition"
-        >
+        <Button color="danger" size="sm" onPress={handleLogout} className="font-medium">
           Logout
-        </button>
+        </Button>
       </div>
-      <AdminDashboard token={token} />
+      <AdminDashboard />
     </div>
   );
 }

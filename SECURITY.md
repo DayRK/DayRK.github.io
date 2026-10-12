@@ -87,7 +87,9 @@ Public routes are still rate limited:
 - Authentication checks on all mutations
 - Input validation before database operations
 - Detailed error logging (server-side only)
-- Prepared statements (using mysql2/promise) prevent SQL injection
+- Parameterised queries through the Supabase client prevent SQL injection
+- Public reads use the anon key, so row level security still applies
+- Writes use the service-role key on the server only, and never reach the browser
 
 ### 🚨 Security Best Practices
 
